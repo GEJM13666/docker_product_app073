@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "public"."products" ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ALTER COLUMN "price" SET DEFAULT 0.0;
