@@ -1,45 +1,51 @@
-import { PrismaClient } from '../app/generated/prisma'
+//product-app073\prisma\seed.ts
+import { PrismaClient } from '@prisma/client'
 
 
 const prisma = new PrismaClient();
 
-async function seedProduct() {
-  try {
-    const result = await prisma.product.createMany({
-      data: [
-        {
-          name: "Notebook",
-          description: "14 inch, Intel i5",
-          price: 23900,
-        },
-        {
-          name: "Wireless Mouse",
-          description: "Ergonomic design",
-          price: 590,
-        },
-      ],
-      skipDuplicates: true, // Optional: avoids inserting duplicates if already present
-    });
-
-    console.log(`✅ Seeded ${result.count} products.`);
-  } catch (error) {
-    console.error("❌ Error seeding products:", error);
-    throw error; // Rethrow to be caught in main()
-  }
-}
-
-async function main() {
-  await seedProduct();
-}
-
-main()
-  .then(() => {
-    console.log("🎉 Seeding completed.");
-  })
-  .catch((e) => {
-    console.error("❌ Seeding failed:", e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
+async function seedUser() { 
+  await prisma.user.create({ 
+    data: { 
+      name: "Sakan", 
+      email: "sakan@gmail.com", 
+      password: "123456", 
+     
+    }, 
   });
+
+}
+
+
+async function seedProduct() { 
+  await prisma.product.createMany({ 
+    data: [ 
+      { 
+        name: "Notebook", 
+        description: "14 inch, Intel i5", 
+        price: 23900, 
+      }, 
+      { 
+        name: "Wireless Mouse", 
+        description: "Ergonomic design", 
+        price: 590, 
+      }, 
+    ], skipDuplicates:true
+  }); 
+} 
+ 
+async function main() { 
+  await prisma.product.deleteMany();
+  await prisma.user.deleteMany();
+  await seedUser(); 
+  await seedProduct(); 
+  console.log("seeded");
+} 
+ 
+main() 
+  .then(() => prisma.$disconnect()) 
+  .catch((e) => { 
+    console.error(e); 
+    prisma.$disconnect() 
+    process.exit(1) 
+  }); 
