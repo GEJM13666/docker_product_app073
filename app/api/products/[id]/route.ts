@@ -1,46 +1,45 @@
-
+// app/api/products/route.ts
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from 'next/server' 
+import { NextResponse } from 'next/server';
 
-
-
-
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+// GET: ดึงข้อมูลสินค้าทั้งหมดพร้อมหมวดหมู่
+export async function GET() {
   try {
-    const body = await req.json();
-    const id = parseInt(params.id);
-
-    const updated = await prisma.product.update({
-      where: { id },
-      data: {
-        name: body.name,
-        description: body.description,
-        price: body.price,
+    const products = await prisma.product.findMany({
+      // ใช้ include เพื่อดึงข้อมูล Category ที่มีความสัมพันธ์กันมาด้วย
+      include: {
+        category: true, 
       },
+      orderBy: {
+        createdAt: 'desc', // เรียงจากสินค้าใหม่สุดไปเก่าสุด
+      }
     });
-
-    return NextResponse.json(updated);
-  } catch (error: unknown) {
+    return NextResponse.json(products);
+  } catch (error) {
     if (error instanceof Error) {
-      return NextResponse.json({ error: 'Failed to update product', details: error.message }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to fetch products', details: error.message }, { status: 500 });
     }
     return NextResponse.json({ error: 'An unknown error occurred' }, { status: 500 });
   }
 }
 
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
+// POST: สำหรับสร้างสินค้าใหม่ (โค้ดเดิมของคุณ)
+export async function POST(req: Request) {
   try {
-    const id = parseInt(params.id);
+    const body = await req.json();
+    const { name, description, price, categoryId } = body;
 
-    const deleted = await prisma.product.delete({
-      where: { id },
+    if (!name || !description || !price || !categoryId) {
+      return NextResponse.json({ error: 'กรุณากรอกข้อมูลให้ครบถ้วน' }, { status: 400 });
+    }
+
+    const newProduct = await prisma.product.create({
+      data: { name, description, price, categoryId },
     });
 
-    return NextResponse.json({ message: 'Deleted', deleted });
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      return NextResponse.json({ error: 'Failed to delete product', details: error.message }, { status: 500 });
-    }
-    return NextResponse.json({ error: 'An unknown error occurred' }, { status: 500 });
+    return NextResponse.json(newProduct, { status: 201 });
+  } catch (error) {
+    // ... (error handling code)
+    return NextResponse.json({ error: 'Failed to create product' }, { status: 500 });
   }
 }

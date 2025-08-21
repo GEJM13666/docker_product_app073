@@ -19,9 +19,21 @@ model Product {
   description String 
   price       Float @default(0.0)
   createdAt   DateTime @default(now()) 
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+
   @@map("products")
   orders Order[] 
   
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  products  Product[] // ระบุว่า Category หนึ่งหมวดหมู่มี Product ได้หลายชิ้น
+
+  @@map("categories")
 }
 
 model Order {
